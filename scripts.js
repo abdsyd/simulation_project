@@ -9,29 +9,45 @@ var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHei
 camera.position.set(0, 20, 50);
 
 // Create a skydiver model
-var skydiver;
+var skydiver = new THREE.Object3D();
 var loader = new GLTFLoader();
 loader.load('./skydiver_model/scene.gltf', function (gltf) {
-    skydiver = gltf.scene;
-    scene.add(skydiver);
+    var gltfScene = gltf.scene;
+    gltfScene.position.copy(initialSkydiverPosition);
+    gltfScene.scale.set(2, 2, 2);
+    skydiver.add(gltfScene);
 });
 
 // Create a parachute model
-var parachute;
+var parachute = new THREE.Object3D();
 loader.load('./parachute_model/scene.gltf', function (gltf) {
-    parachute = gltf.scene;
+    var gltfScene = gltf.scene;
+    gltfScene.position.copy(initialParachutePosition);
+    gltfScene.visible = false; // Hide the parachute initially
+    gltfScene.scale.set(2, 2, 2);
+    parachute.add(gltfScene);
 });
 
 // Set the initial positions and rotations
 var initialSkydiverPosition = new THREE.Vector3(0, 100, 0);
 var initialParachutePosition = new THREE.Vector3(0, 100, 0);
-skydiver.position.copy(initialSkydiverPosition);
-parachute.position.copy(initialParachutePosition);
-parachute.visible = false; // Hide the parachute initially
 
 // Add the skydiver and parachute to the scene
 scene.add(skydiver);
 scene.add(parachute);
+
+// Add a directional light to illuminate the scene
+var light = new THREE.DirectionalLight(0xffffff);
+light.position.set(0, 1, 0); // Adjust the light position as needed
+scene.add(light);
+
+// Function to determine when to deploy the parachute
+function shouldDeployParachute() {
+    // Implement the logic to determine when to deploy the parachute
+    // Return true or false based on the condition
+    // For example, you can check if the skydiver's y-position is below a certain threshold
+    return skydiver.position.y < 50;
+}
 
 // Function to simulate the skydiving animation
 function skydivingAnimation() {
@@ -57,3 +73,10 @@ function skydivingAnimation() {
 
 // Start the skydiving animation
 skydivingAnimation();
+
+// Making the canvas responsive
+window.addEventListener('resize', function () {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
