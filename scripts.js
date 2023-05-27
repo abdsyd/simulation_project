@@ -8,71 +8,75 @@ document.body.appendChild(renderer.domElement);
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 20, 50);
 
-// Create a skydiver model
-var skydiver = new THREE.Object3D();
+// Create a helicopter model
+var helicopter;
 var loader = new GLTFLoader();
+loader.load('./helicopter_model/scene.gltf', function (gltf) {
+    helicopter = gltf.scene;
+    helicopter.scale.set(30, 30, 30);
+    scene.add(helicopter);
+});
+
+// Create a skydiver model
+var skydiver;
 loader.load('./skydiver_model/scene.gltf', function (gltf) {
-    var gltfScene = gltf.scene;
-    gltfScene.position.copy(initialSkydiverPosition);
-    gltfScene.scale.set(2, 2, 2);
-    skydiver.add(gltfScene);
+    skydiver = gltf.scene;
+    skydiver.visible = false; // Hide the skydiver initially
+    skydiver.scale.set(1.5, 1.5, 1.5);
+    scene.add(skydiver);
 });
 
 // Create a parachute model
-var parachute = new THREE.Object3D();
+var parachute;
 loader.load('./parachute_model/scene.gltf', function (gltf) {
-    var gltfScene = gltf.scene;
-    gltfScene.position.copy(initialParachutePosition);
-    gltfScene.visible = false; // Hide the parachute initially
-    gltfScene.scale.set(2, 2, 2);
-    parachute.add(gltfScene);
+    parachute = gltf.scene;
+    parachute.visible = false;  // Hide the parachute initially
+    parachute.scale.set(5, 5, 5);
+    scene.add(parachute);
 });
 
-// Set the initial positions and rotations
-var initialSkydiverPosition = new THREE.Vector3(0, 100, 0);
-var initialParachutePosition = new THREE.Vector3(0, 100, 0);
-
-// Add the skydiver and parachute to the scene
-scene.add(skydiver);
-scene.add(parachute);
-
 // Add a directional light to illuminate the scene
-var light = new THREE.DirectionalLight(0xffffff);
-light.position.set(0, 1, 0); // Adjust the light position as needed
+var light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(0, 1, 0);
 scene.add(light);
 
-// Function to determine when to deploy the parachute
-function shouldDeployParachute() {
-    // Implement the logic to determine when to deploy the parachute
-    // Return true or false based on the condition
-    // For example, you can check if the skydiver's y-position is below a certain threshold
-    return skydiver.position.y < 50;
-}
 
-// Function to simulate the skydiving animation
-function skydivingAnimation() {
-    // Update the skydiver's position and rotation based on user input or time
-    // ...
-
-    // Check if it's time to deploy the parachute
-    if (shouldDeployParachute()) {
-        // Set the parachute position and make it visible
-        parachute.position.copy(skydiver.position);
-        parachute.visible = true;
-
-        // Remove the skydiver from the scene
-        scene.remove(skydiver);
+// Function to drop the skydiver
+function dropSkydiver() {
+    if (skydiver) {
+        skydiver.visible = true;
+        skydiver.position.copy(helicopter.position);
+        // Implement the animation to drop the skydiver from the helicopter
+        // This could involve updating the position of the skydiver over time
     }
-
-    // Render the scene
-    renderer.render(scene, camera);
-
-    // Continue the animation
-    requestAnimationFrame(skydivingAnimation);
 }
 
-// Start the skydiving animation
-skydivingAnimation();
+// Function to show the parachute
+function showParachute() {
+    if (parachute) {
+        parachute.visible = true;
+        parachute.position.copy(skydiver.position);
+        // Implement any necessary animations or position updates for the parachute
+    }
+}
+
+// Keydown event listener to handle key presses
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'p' || event.key === 'P') {
+        dropSkydiver();
+    } else if (event.key === 'o' || event.key === 'O') {
+        showParachute();
+    }
+});
+
+// Function to update the scene and render the frames
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+
+// Start the animation
+animate();
 
 // Making the canvas responsive
 window.addEventListener('resize', function () {
